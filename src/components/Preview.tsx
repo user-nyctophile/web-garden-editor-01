@@ -2,6 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Maximize2, Minimize2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { executeCode } from '../utils/codeExecutor';
 
 interface PreviewProps {
   htmlCode: string;
@@ -12,76 +13,25 @@ interface PreviewProps {
 const Preview: React.FC<PreviewProps> = ({ htmlCode, cssCode, jsCode }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [consoleMessages, setConsoleMessages] = React.useState<Array<{type: string; message: string}>>([]);
   
   useEffect(() => {
-    updatePreview();
+    // Use the codeExecutor utility to safely update the iframe content
+    const cleanup = executeCode(htmlCode, cssCode, jsCode, (output) => {
+      // Handle console output from the iframe
+      setConsoleMessages(prev => [...prev, output]);
+    });
+    
+    // Cleanup function
+    return cleanup;
   }, [htmlCode, cssCode, jsCode]);
   
-  const updatePreview = () => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-    
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) return;
-    
-    // Clear the document
-    iframeDoc.open();
-    
-    // Write the HTML, CSS and JavaScript to the iframe
-    const combinedCode = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <style>${cssCode}</style>
-        </head>
-        <body>
-          ${htmlCode}
-          <script>
-            // Capture console output
-            const originalConsole = window.console;
-            function captureConsole(type) {
-              return function(...args) {
-                originalConsole[type](...args);
-                const message = args.map(arg => 
-                  typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-                ).join(' ');
-                window.parent.postMessage({ type, message }, '*');
-              };
-            }
-            
-            console.log = captureConsole('log');
-            console.warn = captureConsole('warn');
-            console.error = captureConsole('error');
-            console.info = captureConsole('info');
-            
-            // Catch global errors
-            window.onerror = function(message, source, lineno, colno, error) {
-              window.parent.postMessage({ 
-                type: 'error', 
-                message: \`\${message}\nLine: \${lineno}\`
-              }, '*');
-              return true;
-            };
-            
-            // Run user JavaScript
-            try {
-              ${jsCode}
-            } catch (error) {
-              console.error(error.message);
-            }
-          </script>
-        </body>
-      </html>
-    `;
-    
-    iframeDoc.write(combinedCode);
-    iframeDoc.close();
-  };
-  
   const handleRefresh = () => {
-    updatePreview();
+    // Re-execute code to refresh the preview
+    setConsoleMessages([]);
+    executeCode(htmlCode, cssCode, jsCode, (output) => {
+      setConsoleMessages(prev => [...prev, output]);
+    });
   };
   
   const toggleFullscreen = () => {
