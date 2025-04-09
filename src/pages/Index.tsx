@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import CodeEditor from "../components/CodeEditor";
 import Preview from "../components/Preview";
 import Console from "../components/Console";
@@ -255,15 +255,16 @@ const Index = () => {
             jsCode={jsCode}
             autoRun={false}
             onConsoleOutput={handleConsoleOutput}
-          />
-          
-          <Console
-            isVisible={isConsoleVisible}
-            setIsVisible={setIsConsoleVisible}
-            output={consoleOutput}
+            isConsoleVisible={isConsoleVisible}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
+      
+      <Console
+        isVisible={isConsoleVisible}
+        setIsVisible={setIsConsoleVisible}
+        output={consoleOutput}
+      />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Maximize2, Minimize2, RefreshCw, Loader2, ArrowDown, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ interface PreviewProps {
   jsCode: string;
   autoRun?: boolean;
   onConsoleOutput?: (output: {type: string; message: string}) => void;
+  isConsoleVisible?: boolean;
 }
 
 const Preview: React.FC<PreviewProps> = ({ 
@@ -19,7 +21,8 @@ const Preview: React.FC<PreviewProps> = ({
   cssCode, 
   jsCode, 
   autoRun = false,
-  onConsoleOutput 
+  onConsoleOutput,
+  isConsoleVisible = false
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -213,7 +216,7 @@ const Preview: React.FC<PreviewProps> = ({
       
       {isLoading && <Progress value={loadingProgress} className="h-1" />}
       
-      <div className="flex-1 bg-white dark:bg-gray-950 overflow-auto relative">
+      <div className={`flex-1 bg-white dark:bg-gray-950 overflow-auto relative ${isConsoleVisible ? 'pb-[2.5rem+64px]' : ''}`}>
         <iframe
           ref={iframeRef}
           title="preview"

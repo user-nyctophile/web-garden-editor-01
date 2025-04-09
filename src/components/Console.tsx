@@ -38,7 +38,7 @@ const Console: React.FC<ConsoleProps> = ({ isVisible, setIsVisible, output }) =>
   };
   
   return (
-    <div className={`bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${isVisible ? 'h-64' : 'h-10'}`}>
+    <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 fixed bottom-0 left-0 right-0 z-40">
       <div className="flex justify-between items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"
@@ -62,7 +62,7 @@ const Console: React.FC<ConsoleProps> = ({ isVisible, setIsVisible, output }) =>
       </div>
       
       {isVisible && (
-        <ScrollArea className="h-[calc(100%-2.5rem)]">
+        <ScrollArea className="h-64">
           <div className="p-2 font-mono text-sm bg-gray-50 dark:bg-gray-950">
             {output.length > 0 ? (
               output.map((log, index) => (
