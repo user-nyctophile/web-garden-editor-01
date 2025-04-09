@@ -1,6 +1,5 @@
-
 import React, { useRef, useEffect, useState } from 'react';
-import { Maximize2, Minimize2, RefreshCw, Loader2, ArrowDown } from 'lucide-react';
+import { Maximize2, Minimize2, RefreshCw, Loader2, ArrowDown, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -30,7 +29,6 @@ const Preview: React.FC<PreviewProps> = ({
   const cleanupRef = useRef<(() => void) | null>(null);
   const isMobile = useIsMobile();
   
-  // Handle console output from the iframe
   const handleConsoleOutput = (output: {type: string; message: string}) => {
     setConsoleMessages(prev => [...prev, output]);
     if (onConsoleOutput) {
@@ -38,9 +36,7 @@ const Preview: React.FC<PreviewProps> = ({
     }
   };
   
-  // Run the code when explicitly requested
   const runCode = () => {
-    // Clean up previous execution if any
     if (cleanupRef.current) {
       cleanupRef.current();
     }
@@ -48,7 +44,6 @@ const Preview: React.FC<PreviewProps> = ({
     setIsLoading(true);
     setLoadingProgress(10);
     
-    // Simulate loading
     let progressInterval = setInterval(() => {
       setLoadingProgress(prev => {
         if (prev >= 90) {
@@ -60,7 +55,6 @@ const Preview: React.FC<PreviewProps> = ({
     }, 200);
     
     setConsoleMessages([]);
-    // Small delay to show loading effect
     setTimeout(() => {
       const cleanup = executeCode(htmlCode, cssCode, jsCode, handleConsoleOutput);
       cleanupRef.current = cleanup;
@@ -75,12 +69,10 @@ const Preview: React.FC<PreviewProps> = ({
     }, 800);
   };
   
-  // Initial execution only if autoRun is true
   useEffect(() => {
     if (autoRun) {
       runCode();
     } else {
-      // Just show an empty iframe with a message
       const iframe = iframeRef.current;
       if (iframe) {
         iframe.srcdoc = `
@@ -168,7 +160,6 @@ const Preview: React.FC<PreviewProps> = ({
   }, [autoRun]);
   
   const handleRefresh = () => {
-    // Re-execute code to refresh the preview
     runCode();
   };
   
@@ -230,7 +221,6 @@ const Preview: React.FC<PreviewProps> = ({
           className="w-full h-full border-none"
         />
         
-        {/* Bottom action bar (mobile only) */}
         {isMobile && !isLoading && !isFullscreen && (
           <div className="absolute bottom-4 right-4">
             <Button 
