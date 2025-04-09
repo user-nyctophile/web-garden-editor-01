@@ -8,30 +8,98 @@ interface PreviewProps {
   htmlCode: string;
   cssCode: string;
   jsCode: string;
+  autoRun?: boolean;
+  onConsoleOutput?: (output: {type: string; message: string}) => void;
 }
 
-const Preview: React.FC<PreviewProps> = ({ htmlCode, cssCode, jsCode }) => {
+const Preview: React.FC<PreviewProps> = ({ 
+  htmlCode, 
+  cssCode, 
+  jsCode, 
+  autoRun = false,
+  onConsoleOutput 
+}) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const [consoleMessages, setConsoleMessages] = React.useState<Array<{type: string; message: string}>>([]);
+  const cleanupRef = useRef<(() => void) | null>(null);
   
-  useEffect(() => {
-    // Use the codeExecutor utility to safely update the iframe content
-    const cleanup = executeCode(htmlCode, cssCode, jsCode, (output) => {
-      // Handle console output from the iframe
-      setConsoleMessages(prev => [...prev, output]);
-    });
+  // Handle console output from the iframe
+  const handleConsoleOutput = (output: {type: string; message: string}) => {
+    setConsoleMessages(prev => [...prev, output]);
+    if (onConsoleOutput) {
+      onConsoleOutput(output);
+    }
+  };
+  
+  // Run the code when explicitly requested
+  const runCode = () => {
+    // Clean up previous execution if any
+    if (cleanupRef.current) {
+      cleanupRef.current();
+    }
     
-    // Cleanup function
-    return cleanup;
-  }, [htmlCode, cssCode, jsCode]);
+    setConsoleMessages([]);
+    const cleanup = executeCode(htmlCode, cssCode, jsCode, handleConsoleOutput);
+    cleanupRef.current = cleanup;
+  };
+  
+  // Initial execution only if autoRun is true
+  useEffect(() => {
+    if (autoRun) {
+      runCode();
+    } else {
+      // Just show an empty iframe with a message
+      const iframe = iframeRef.current;
+      if (iframe) {
+        iframe.srcdoc = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body {
+                  font-family: system-ui, -apple-system, sans-serif;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                  margin: 0;
+                  color: #666;
+                  text-align: center;
+                  background-color: #f9f9f9;
+                }
+                button {
+                  padding: 8px 16px;
+                  background-color: #4CAF50;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  margin-top: 16px;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <div>
+                <p>Click the Run button to execute your code.</p>
+              </div>
+            </body>
+          </html>
+        `;
+      }
+    }
+    
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
+  }, [autoRun]);
   
   const handleRefresh = () => {
     // Re-execute code to refresh the preview
-    setConsoleMessages([]);
-    executeCode(htmlCode, cssCode, jsCode, (output) => {
-      setConsoleMessages(prev => [...prev, output]);
-    });
+    runCode();
   };
   
   const toggleFullscreen = () => {
@@ -49,9 +117,10 @@ const Preview: React.FC<PreviewProps> = ({ htmlCode, cssCode, jsCode }) => {
             variant="ghost" 
             size="sm"
             onClick={handleRefresh}
-            title="Refresh preview"
+            title="Run code"
           >
             <RefreshCw className="h-4 w-4" />
+            <span className="ml-1">Run</span>
           </Button>
           <Button 
             variant="ghost" 

@@ -29,9 +29,7 @@ const Index = () => {
     setConsoleOutput([]);
     
     try {
-      executeCode(htmlCode, cssCode, jsCode, (output) => {
-        setConsoleOutput(prev => [...prev, output]);
-      });
+      // This will now be handled by the Preview component
       toast({
         title: "Code executed",
         description: "Your code has been executed successfully.",
@@ -192,6 +190,13 @@ const Index = () => {
     };
   }, [htmlCode, cssCode, jsCode]);
 
+  const handleConsoleOutput = (output: {type: string; message: string}) => {
+    setConsoleOutput(prev => [...prev, output]);
+    if (output.type === 'error') {
+      setIsConsoleVisible(true);
+    }
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
       <Navbar 
@@ -282,6 +287,8 @@ const Index = () => {
             htmlCode={htmlCode}
             cssCode={cssCode}
             jsCode={jsCode}
+            autoRun={false}
+            onConsoleOutput={handleConsoleOutput}
           />
           
           <Console

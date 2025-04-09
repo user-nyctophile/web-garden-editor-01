@@ -24,10 +24,16 @@ const getLanguageId = (language: string): string => {
 const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, isDarkMode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const valueRef = useRef<string>(value);
   
+  // Update ref when value changes
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
   useEffect(() => {
     if (containerRef.current) {
-      // Initialize the editor
+      // Initialize the editor with performance optimizations
       editorRef.current = monaco.editor.create(containerRef.current, {
         value,
         language: getLanguageId(language),
@@ -48,24 +54,50 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, isDa
         find: {
           addExtraSpaceOnTop: false,
         },
+        // Performance optimizations
+        renderWhitespace: 'none',
+        renderControlCharacters: false,
+        renderIndentGuides: false,
+        renderValidationDecorations: 'editable',
+        scrollbar: {
+          vertical: 'visible',
+          horizontal: 'visible',
+          useShadows: false,
+          verticalHasArrows: false,
+          horizontalHasArrows: false,
+          verticalScrollbarSize: 10,
+          horizontalScrollbarSize: 10,
+        },
       });
       
-      // Set up change event handler
+      // Debounced change event handler
+      let debounceTimeout: NodeJS.Timeout | null = null;
+      
       editorRef.current.onDidChangeModelContent(() => {
         const newValue = editorRef.current?.getValue();
-        if (newValue !== undefined) {
-          onChange(newValue);
+        if (newValue !== undefined && newValue !== valueRef.current) {
+          if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+          }
+          
+          // Use debounce for performance
+          debounceTimeout = setTimeout(() => {
+            onChange(newValue);
+          }, 300);
         }
       });
       
       // Clean up editor on component unmount
       return () => {
+        if (debounceTimeout) {
+          clearTimeout(debounceTimeout);
+        }
         if (editorRef.current) {
           editorRef.current.dispose();
         }
       };
     }
-  }, [containerRef, language, onChange, value]);
+  }, [containerRef, language, onChange]);
   
   // Update editor theme when isDarkMode changes
   useEffect(() => {
@@ -76,8 +108,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, isDa
   
   // Update editor content if value changes externally
   useEffect(() => {
-    if (editorRef.current && editorRef.current.getValue() !== value) {
+    if (editorRef.current && value !== editorRef.current.getValue()) {
+      // Preserve cursor position when updating
+      const position = editorRef.current.getPosition();
       editorRef.current.setValue(value);
+      if (position) {
+        editorRef.current.setPosition(position);
+      }
     }
   }, [value]);
   
