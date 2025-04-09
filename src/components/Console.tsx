@@ -2,6 +2,7 @@
 import React from 'react';
 import { ChevronUp, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ConsoleProps {
   isVisible: boolean;
@@ -37,7 +38,7 @@ const Console: React.FC<ConsoleProps> = ({ isVisible, setIsVisible, output }) =>
   };
   
   return (
-    <div className={`bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${isVisible ? 'h-1/3 max-h-1/3' : 'h-10'}`}>
+    <div className={`bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${isVisible ? 'h-64' : 'h-10'}`}>
       <div className="flex justify-between items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"
@@ -61,23 +62,25 @@ const Console: React.FC<ConsoleProps> = ({ isVisible, setIsVisible, output }) =>
       </div>
       
       {isVisible && (
-        <div className="h-[calc(100%-2.5rem)] overflow-y-auto p-2 font-mono text-sm bg-gray-50 dark:bg-gray-950">
-          {output.length > 0 ? (
-            output.map((log, index) => (
-              <div 
-                key={index}
-                className={`py-1 px-2 border-b border-gray-100 dark:border-gray-800 ${getLogStyle(log.type)}`}
-              >
-                <span className="mr-2">{getIconForType(log.type)}</span>
-                <pre className="whitespace-pre-wrap font-mono text-xs inline">{log.message}</pre>
+        <ScrollArea className="h-[calc(100%-2.5rem)]">
+          <div className="p-2 font-mono text-sm bg-gray-50 dark:bg-gray-950">
+            {output.length > 0 ? (
+              output.map((log, index) => (
+                <div 
+                  key={index}
+                  className={`py-1 px-2 border-b border-gray-100 dark:border-gray-800 ${getLogStyle(log.type)}`}
+                >
+                  <span className="mr-2">{getIconForType(log.type)}</span>
+                  <pre className="whitespace-pre-wrap font-mono text-xs inline">{log.message}</pre>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-400 dark:text-gray-600 italic p-2">
+                Console is empty. Run your code to see output here.
               </div>
-            ))
-          ) : (
-            <div className="text-gray-400 dark:text-gray-600 italic p-2">
-              Console is empty. Run your code to see output here.
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </ScrollArea>
       )}
     </div>
   );
