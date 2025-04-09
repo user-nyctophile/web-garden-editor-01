@@ -103,12 +103,9 @@ export const executeCode = (
   // Add event listener
   window.addEventListener('message', messageHandler);
   
-  // Set the iframe content
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-  if (iframeDoc) {
-    iframeDoc.open();
-    iframeDoc.write(combinedCode);
-    iframeDoc.close();
+  // Set the iframe content using srcdoc attribute instead of directly manipulating the document
+  if (iframe) {
+    iframe.srcdoc = combinedCode;
   }
 
   // Return a cleanup function to remove the event listener
