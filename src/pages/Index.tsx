@@ -6,8 +6,13 @@ import Console from "../components/Console";
 import Navbar from "../components/Navbar";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { defaultCode } from "../utils/defaultCode";
-import { executeCode } from "../utils/codeExecutor";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"html" | "css" | "js">("html");
@@ -19,10 +24,8 @@ const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [layout, setLayout] = useState<"vertical" | "horizontal">("horizontal");
-  const resizeRef = useRef<HTMLDivElement>(null);
-  const [splitPosition, setSplitPosition] = useState(50);
-  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleRun = () => {
     setIsLoading(true);
@@ -110,34 +113,6 @@ const Index = () => {
     });
   };
 
-  const startResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    const startPosition = layout === "horizontal" 
-      ? e.clientX 
-      : e.clientY;
-    const startSize = splitPosition;
-    
-    const onMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const newPosition = layout === "horizontal"
-        ? ((e.clientX - containerRect.left) / containerRect.width) * 100
-        : ((e.clientY - containerRect.top) / containerRect.height) * 100;
-      
-      setSplitPosition(Math.min(Math.max(newPosition, 20), 80)); // Constrain between 20% and 80%
-    };
-    
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-    
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
-
   const toggleLayout = () => {
     setLayout(prev => prev === "horizontal" ? "vertical" : "horizontal");
   };
@@ -197,6 +172,13 @@ const Index = () => {
     }
   };
 
+  // Editor tab styling
+  const getTabStyle = (tab: "html" | "css" | "js") => {
+    return activeTab === tab 
+      ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400" 
+      : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300";
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
       <Navbar 
@@ -212,38 +194,26 @@ const Index = () => {
         layout={layout}
       />
       
-      <div
-        ref={containerRef}
-        className={`flex flex-1 ${layout === "horizontal" ? "flex-row" : "flex-col"} overflow-hidden`}
+      <ResizablePanelGroup
+        direction={layout === "horizontal" ? "horizontal" : "vertical"}
+        className="flex-1 overflow-hidden"
       >
-        {/* Editor Section */}
-        <div 
+        {/* Editor Panel */}
+        <ResizablePanel 
+          defaultSize={50} 
+          minSize={20}
           className="bg-white dark:bg-gray-900 overflow-hidden"
-          style={{ 
-            flex: `0 0 ${splitPosition}%`,
-            maxWidth: layout === "horizontal" ? `${splitPosition}%` : "100%",
-            maxHeight: layout === "vertical" ? `${splitPosition}%` : "100%"
-          }}
         >
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
-            <button
-              className={`px-4 py-2 font-medium ${activeTab === "html" ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400" : "text-gray-600 dark:text-gray-400"}`}
-              onClick={() => setActiveTab("html")}
-            >
-              HTML
-            </button>
-            <button
-              className={`px-4 py-2 font-medium ${activeTab === "css" ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400" : "text-gray-600 dark:text-gray-400"}`}
-              onClick={() => setActiveTab("css")}
-            >
-              CSS
-            </button>
-            <button
-              className={`px-4 py-2 font-medium ${activeTab === "js" ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400" : "text-gray-600 dark:text-gray-400"}`}
-              onClick={() => setActiveTab("js")}
-            >
-              JavaScript
-            </button>
+          <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-thin">
+            {(["html", "css", "js"] as const).map((tab) => (
+              <button
+                key={tab}
+                className={`px-4 py-2 font-medium whitespace-nowrap transition-colors ${getTabStyle(tab)}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab.toUpperCase()}
+              </button>
+            ))}
           </div>
           
           <div className="h-[calc(100%-2.5rem)] overflow-hidden">
@@ -272,17 +242,13 @@ const Index = () => {
               />
             )}
           </div>
-        </div>
+        </ResizablePanel>
         
-        {/* Resizer */}
-        <div
-          ref={resizeRef}
-          className={`flex-none cursor-${layout === "horizontal" ? "col" : "row"}-resize bg-gray-200 dark:bg-gray-700 hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors ${layout === "horizontal" ? "w-1" : "h-1"}`}
-          onMouseDown={startResize}
-        />
+        {/* Resize Handle */}
+        <ResizableHandle withHandle />
         
-        {/* Preview Section */}
-        <div className="flex flex-col flex-1 bg-gray-100 dark:bg-gray-800 overflow-hidden">
+        {/* Preview Panel */}
+        <ResizablePanel defaultSize={50} minSize={20} className="flex flex-col bg-gray-100 dark:bg-gray-800 overflow-hidden">
           <Preview
             htmlCode={htmlCode}
             cssCode={cssCode}
@@ -296,18 +262,8 @@ const Index = () => {
             setIsVisible={setIsConsoleVisible}
             output={consoleOutput}
           />
-        </div>
-      </div>
-      
-      {/* Floating Action Button (Mobile) */}
-      <div className="md:hidden fixed right-6 bottom-6 flex flex-col gap-2">
-        <button
-          onClick={handleRun}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg"
-        >
-          Run
-        </button>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

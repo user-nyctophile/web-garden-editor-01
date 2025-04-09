@@ -54,11 +54,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, isDa
         find: {
           addExtraSpaceOnTop: false,
         },
-        // Performance optimizations
+        // Performance optimizations - removed renderIndentGuides which was causing the error
         renderWhitespace: 'none',
         renderControlCharacters: false,
-        renderIndentGuides: false,
-        renderValidationDecorations: 'editable',
         scrollbar: {
           vertical: 'visible',
           horizontal: 'visible',
