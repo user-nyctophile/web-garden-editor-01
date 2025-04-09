@@ -25,6 +25,11 @@ body {
   background-color: #f8f9fa;
   padding: 20px;
   margin: 0;
+  height: 100%;
+}
+
+html {
+  height: 100%;
 }
 
 .container {

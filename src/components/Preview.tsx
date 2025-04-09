@@ -89,15 +89,19 @@ const Preview: React.FC<PreviewProps> = ({
                   display: flex;
                   justify-content: center;
                   align-items: center;
-                  height: 100vh;
+                  height: 100%;
                   margin: 0;
                   color: #666;
                   text-align: center;
                   background-color: #f9f9f9;
                 }
-                .container {
-                  max-width: 90%;
-                  padding: 2rem;
+                .preview-message {
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  width: 80%;
+                  max-width: 500px;
                 }
                 .title {
                   font-size: 1.5rem;
@@ -118,33 +122,10 @@ const Preview: React.FC<PreviewProps> = ({
                 button:hover {
                   background-color: #3e8e41;
                 }
-                .features {
-                  margin-top: 2rem;
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 1rem;
-                  justify-content: center;
-                }
-                .feature {
-                  background-color: #f1f1f1;
-                  padding: 1rem;
-                  border-radius: 8px;
-                  width: calc(33% - 1rem);
-                  min-width: 150px;
-                  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                }
-                @media (max-width: 768px) {
-                  .feature {
-                    width: 100%;
-                  }
-                  .title {
-                    font-size: 1.2rem;
-                  }
-                }
               </style>
             </head>
             <body>
-              <div class="container">
+              <div class="preview-message">
                 <div class="title">Code Playground Preview</div>
                 <p>Click the Run button to execute your code and see the results.</p>
                 <p>Create, test, and share your web projects in this interactive environment.</p>
@@ -216,7 +197,7 @@ const Preview: React.FC<PreviewProps> = ({
       
       {isLoading && <Progress value={loadingProgress} className="h-1" />}
       
-      <div className={`flex-1 bg-white dark:bg-gray-950 overflow-auto relative ${isConsoleVisible ? 'pb-[2.5rem+64px]' : ''}`}>
+      <div className={`flex-1 bg-white dark:bg-gray-950 overflow-hidden relative ${isConsoleVisible ? 'pb-[2.5rem+64px]' : ''}`}>
         <iframe
           ref={iframeRef}
           title="preview"

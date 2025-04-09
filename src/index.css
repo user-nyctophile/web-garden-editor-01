@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +99,56 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom styles for the code playground */
+.preview-iframe {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.preview-container {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Fixed heights for consistent layout */
+.code-playground {
+  height: calc(100vh - 64px); /* Adjust based on navbar height */
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b4b4b;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #606060;
 }
