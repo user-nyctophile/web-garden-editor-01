@@ -1,7 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
-import { editor } from 'monaco-editor';
 
 interface CodeEditorProps {
   value: string;
@@ -24,7 +23,7 @@ const getLanguageId = (language: string): string => {
 
 const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, isDarkMode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   
   useEffect(() => {
     if (containerRef.current) {
@@ -66,7 +65,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, isDa
         }
       };
     }
-  }, [containerRef, language, onChange]);
+  }, [containerRef, language, onChange, value]);
   
   // Update editor theme when isDarkMode changes
   useEffect(() => {
